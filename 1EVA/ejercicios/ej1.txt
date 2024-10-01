@@ -1,0 +1,104 @@
+** EJERCICIO 1 **
+
+Hacer el host virtual "prueba.com"
+
+Dentro de la carpeta "prueba.com" habrá un "index.html" que tenga:
+
+	<a href = "protegida/webprotegida.html"> Click aquí </a>
+
+En la subcarpeta "prueba.com/protegida" estará un HTML con un <p>
+
+Al archivo solo podrán acceder los usuarios "user1" y "user2" con la contraseña 1234
+
+=====================================================================
+
+
+// 1.- comprobar el estado de nuestro servidor apache: 
+	
+	sudo service apache2 status
+	
+// 2.- lo reiniciamos para aplicar cambios:
+
+	sudo service apache2 restart
+	
+// 3.- vamos a crear el fichero de configuración principal:
+
+	cd /var/www/html
+	sudo mkdir prueba.com
+	cd prueba.com
+	sudo nano index.html
+	
+	y aquí metemos el código:
+	
+	    <!DOCTYPE>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Bienvenido a prueba.com</title>
+    </head>
+    <body>
+        <p>Estás en prueba.com</p>
+        <a href = "protegida/webprotegida.html"> Click aquí </a>
+    </body>
+    </html>
+
+// 4.- vamos a crear el fichero que tendrá los datos de usuario y sus contraseñas
+
+	cd /etc/apache2/
+	sudo htpasswd -c /etc/apache2/.htpasswd user1
+	==> introducimos una contraseña para user1
+	
+// 5.- cambiamos los permisos a este fichero:
+// [asignamos la propiedad del fichero y el grupo al usuario y grupo sobre el que se ejecuta Apache en nuestro Debian]
+
+	sudo chown www-data:www-data /etc/apache2/.htpasswd
+	
+// 6.- añadimos a nustro segundo usuario:
+
+	sudo htpasswd /etc/apache2/.htpasswd user2
+	==> introducimos una contraseña para user2
+	
+// 7.- podemos comprobar que los usuarios se han añadido junto a su contraseña cifrada:
+
+	cat /etc/apache2/.htpasswd
+	
+// 8.- vamos a proteger nuestro host para que sólo accedan los usuarios que hemos creado:
+
+	cd /etc/apache2/sites-available
+	sudo nano prueba.com.conf
+	
+<VirtualHost *:80>
+	# Email de contacto del administrador
+	ServerAdmin webmaster@prueba.com
+	
+	#Carpeta Raiz del host "prueba.com"
+	DocumentRoot "/var/www/html/prueba.com"
+	
+	# Nombre del servidor
+	ServerName prueba.com
+	
+	# Los distintos nombres que pueden usarse para acceder a "prueba.com"
+	ServerAlias www.prueba.com
+	
+	# El archivo de log de errores
+	ErrorLog "${APACHE_LOG_DIR}/prueba.com-error.log"
+	
+	# El archivo del log de accesos
+	CustomLog "${APACHE_LOG_DIR}/prueba.com-access.log" combined
+
+	 <Directory "/var/www/html/prueba.com/carpetaU1">
+    		AuthType Basic
+    		AuthName "Acesso solo a usuario1"
+    		AuthUserFile "/etc/apache2/.htpasswd"    
+    		Require valid-user
+	</Directory>
+
+	<Directory "/var/www/html/prueba.com/carpetaOtros">
+    		AuthType Basic
+    		AuthName "Acesso solo a otros usuarios"
+    		AuthUserFile "/etc/apache2/htpasswds/.htpasswd"
+    		Require valid-user
+	</Directory>
+</VirtualHost>
+	
+
