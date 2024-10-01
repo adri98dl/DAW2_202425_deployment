@@ -10,11 +10,12 @@ grupos.com
 `-- proveedores
     `-- proveedores.html
 
-Los HTML son meros archivos para poder distinguir dónde estamos en todo momento cuando hagamos las pruebas en el navegador.
-Los usuarios administradores son "admin1" y "admin2", con contraseñas "1" y "2" respectivamente.
-Los usuarios clientes son "cli1", "cli2" y "cli3", todos ellos con contraseñas "1234".
-Los usuarios proveedores son "prov1" y "prov2", con contraseñas "1" y "2" respectivamente.
-Solo los usuarios administradores tienen acceso a "admins".
-Solo los usuarios clientes y administradores tienen acceso a "clientes".
-Solo los usuarios proveedores y administradores tienen acceso a "proveedores".
-Usando la autenticación HTTP que conocemos, buscad la manera de implementar grupos de usuarios, de tal manera que no sea necesario crear múltiples archivos de contraseñas para cada rol (es decir, solo habrá un archivo ".htpasswd" en total).
+- Los HTML son meros archivos para poder distinguir dónde estamos en todo momento cuando hagamos las pruebas en el navegador.
+- Los usuarios administradores son "admin1" y "admin2", con contraseñas "1" y "2" respectivamente.
+- Los usuarios clientes son "cli1", "cli2" y "cli3", todos ellos con contraseñas "1234".
+- Los usuarios proveedores son "prov1" y "prov2", con contraseñas "1" y "2" respectivamente.
+- Solo los usuarios administradores tienen acceso a "admins".
+- Solo los usuarios clientes y administradores tienen acceso a "clientes".
+- Solo los usuarios proveedores y administradores tienen acceso a "proveedores".
+- Usando la autenticación HTTP que conocemos, buscad la manera de implementar grupos de usuarios, de tal manera que no sea necesario
+crear múltiples archivos de contraseñas para cada rol (es decir, solo habrá un archivo ".htpasswd" en total).
