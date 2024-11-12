@@ -8,14 +8,17 @@ usamos el servidor web **Apache** con alguno de los empaquetados con XAMPP:
 - Apache Tomcat
 - phpMyAdmin
 
-### Instalación en Linux
+## Instalación en Linux *[distribución Debian]*
 
-distribución debian
+### Instalación de servidores
 
----
-
---> instalamos el servidor y todas sus dependencias:
+- Apache2 como servidor de fronted:
 ```sudo apt-get install apache2 apache2-utils```
+
+- Tomcat como servidor de backend
+```sudo apt-get install tomcat9 tomcat8.```
+
+ .
 
 --> una vez instalado, nos encontramos con dos aspectos:
 - en la ruta ```/etc/apache2``` ==> se almacenarán los ficheros de configuración
@@ -32,25 +35,26 @@ distribución debian
 ```
 <VirtualHost *:80>
 	# Email de contacto del administrador
-	ServerAdmin webmaster@despliegue.com 
+	ServerAdmin webmaster@prueba.com
 
-	#Carpeta Raiz del host "despliegue.com"
-	DocumentRoot "/var/www/html/despliegue.com"
+	# Carpeta Raiz del host "prueba.com"
+	DocumentRoot "/var/www/html/prueba.com"
 	
-  # Nombre del servidor
-	ServerName despliegue.com
+  	# Nombre del servidor
+	ServerName prueba.com
 	
-  # Los distintos nombres que pueden usarse para acceder a "despliegue.com"
-	ServerAlias www.despliegue.com
+  	# Los distintos nombres que pueden usarse para acceder a "prueba.com"
+	ServerAlias www.prueba.com
 	
-  # El archivo de log de errores
-	ErrorLog "${APACHE_LOG_DIR}/despliegue.com-error.log"
+  	# El archivo de log de errores
+	ErrorLog "${APACHE_LOG_DIR}/prueba.com-error.log"
 	
-  # El archivo del log de accesos
-	CustomLog "${APACHE_LOG_DIR}/despliegue.com-access.log" combined
+  	# El archivo del log de accesos
+	CustomLog "${APACHE_LOG_DIR}/prueba.com-access.log" combined
 </VirtualHost>
 ```
 
+--> lo levantamos ```sudo a2ensite prueba.com```
 
 
 
