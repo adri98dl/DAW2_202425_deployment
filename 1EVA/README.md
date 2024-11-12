@@ -1,4 +1,4 @@
-# SERVIDOR WEB DE APLICACIONES
+  # SERVIDOR WEB DE APLICACIONES
 
 usamos el servidor web **Apache** con alguno de los empaquetados con XAMPP:
 - MySQL
