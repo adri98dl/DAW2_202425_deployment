@@ -27,7 +27,29 @@ distribución debian
 
 --> y creamos ```sudo mkdir nombre_proyecto.com```
 
---> creamos el archivo ```nano nombre_proyecto.com.conf```
+--> creamos el archivo ```nano nombre_proyecto.com.conf``` y le metemos:
+
+```
+<VirtualHost *:80>
+	# Email de contacto del administrador
+	ServerAdmin webmaster@despliegue.com 
+
+	#Carpeta Raiz del host "despliegue.com"
+	DocumentRoot "/var/www/html/despliegue.com"
+	
+  # Nombre del servidor
+	ServerName despliegue.com
+	
+  # Los distintos nombres que pueden usarse para acceder a "despliegue.com"
+	ServerAlias www.despliegue.com
+	
+  # El archivo de log de errores
+	ErrorLog "${APACHE_LOG_DIR}/despliegue.com-error.log"
+	
+  # El archivo del log de accesos
+	CustomLog "${APACHE_LOG_DIR}/despliegue.com-access.log" combined
+</VirtualHost>
+```
 
 
 
