@@ -1,0 +1,159 @@
+*****************************************************************************
+EJECUTAR VISUAL STUDIO CON PRIVILEGIOS:
+sudo code "CARPETA" --no-sandbox --user-data-dir=~/.vscode-root
+*****************************************************************************
+
+
+VAMOS A GENERAR ARCHIVOS .war
+==============================
+
+// PRIMEROS PASOS..
+	
+	sudo apt update
+
+	sudo apt upgrade
+
+
+// POR SI NO ESTÁ INSTALADO.. java
+
+	sudo apt install openjdk-17-jre
+
+	sudo apt install openjdk-17-jdk
+
+	sudo apt install wget
+
+
+// AÑADIMOS EL USUARIO DE TOMCAT
+
+	sudo useradd -m -d /opt/tomcat -U -s /bin/false tomcat
+
+
+
+// VAMOS AL DIR tomcat Y BORRAMOS TODO SU CONTENIDO
+
+	cd tomcat
+
+	sudo rm -r *
+
+
+// VAMOS A ESE DIR
+
+	cd /opt
+
+
+// METEMOS EL SIGUIENTE ARCHIVO
+
+	sudo wget https://downloads.apache.org/tomcat/tomcat-11/v11.0.1/bin/apache-tomcat-11.0.1.tar.gz
+
+
+// LO DESCOMPRIMIMOS
+	
+	sudo tar -xzvf apache-tomcat-11.0.1.tar.gz -C /opt/tomcat
+
+
+// CAMBIAMOS LOS PERMISOS PARA EL USER
+
+	sudo chown -R tomcat:tomcat /opt/tomcat
+
+	sudo chmod -R u+x /opt/tomcat/bin
+
+
+// EDITAMOS PARA QUE SE EJECUTE CON EL SERVICE, UN ARCHIVO PARA VAYA
+
+	sudo gedit /etc/systemd/system/tomcat.service
+
+	== LE METEMOS ==>
+	[Unit]
+	Description="Tomcat Service"
+	After=network.target
+
+
+	[Service]
+	Type=forking
+	User=tomcat
+	Group=tomcat
+
+
+	Environment="JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-amd64"
+	Environment="JAVA_OPTS=-Djava.security.egd=file:///dev/urandom"
+	Environment="CATALINA_BASE=/opt/tomcat"
+	Environment="CATALINA_HOME=/opt/tomcat"
+	Environment="CATALINA_PID=/opt/tomcat/temp/tomcat.pid"
+	Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC"
+
+
+	ExecStart=/opt/tomcat/bin/startup.sh
+	ExecStop=/opt/tomcat/bin/shutdown.sh
+
+
+	[Install]
+	WantedBy=multi-user.target
+
+
+// REINICIAMOS AL DEMONIO
+
+	sudo systemctl daemon-reload
+
+
+// INICIAMOS TOMCAT
+
+	sudo sysyemctl start tomcat
+
+	sudo systemctl status tomcat
+
+
+// COMPROBAMOS QUE EL PUERTO 8080 ESTÁ CONECTADO (línea 70)
+
+	sudo gedit tomcat/conf/server.xml
+
+
+// EN FIREFOX COMPROBAMOS QUE NOS SALE LA WEB DE APACHE
+
+	http://localhost:8080/
+	
+
+// PARA PODER USAR LA CONFIGURACIÓN DE TOMCAT
+
+	sudo gedit tomcat/conf/tomcat-users.xml
+
+		== LE METEMOS en la penúltima línea ==>
+		  <role rolename="manager-status" /> 
+		  <role rolename="manager-gui" /> 
+		  <role rolename="admin-gui" /> 
+		  <user username="master" password="master" roles="manager-status, manager-gui, admin-gui" />
+
+
+// REINICIAMOS TOMCAT
+
+	sudo systemctl restart tomcat
+
+
+// SI VOLVEMOS A FIREFOX ('F5') AL CLICKAR SOBRE UNA DE LAS TRES, NOS PEDIRÁ IDENTIFICARNOS CON EL USUARIO Y PWD QUE ACABAMOS DE METER
+
+	http://localhost:8080/
+
+
+// DESDE AQUÍ PODREMOS CREAR LOS .war
+	
+	http://localhost:8080/manager/html
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
