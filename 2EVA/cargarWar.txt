@@ -138,8 +138,19 @@ VAMOS A GENERAR ARCHIVOS .war
 	http://localhost:8080/manager/html
 
 
-//
+// VAMOS A DOCUMENTS Y CREAMOS EL DIRECTORIO
 
+	
+
+Descargar maven (tar.gz) y descomprimir en documentos  -> https://maven.apache.org/download.cgi
+
+Descargar maven en visual studio -> Extension Pack for Java
+
+Ahora coger la ruta del bin ejemplo -> /home/adripablo/Documentos/apache-maven-3.9.9-bin/apache-maven-3.9.9/bin/mvn
+
+esa ruta ponerlo en vs ajustes en el buscador poner maven y maven for java en el path poner la ruta 
+
+y ahora dentro de web apps click derecho new java projects - maven - more - jakarta10 minimal -  
 
 
 
