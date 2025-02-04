@@ -161,7 +161,380 @@ y ahora dentro de web apps click derecho new java projects - maven - more - jaka
 
 
 
+EN /ETC/APACHE2/SITES-AVAILABLE/SHOPTOMCAT.COM.CONF PONDREMOS ESTO
+<VirtualHost *:80>
+	ServerAdmin webmaster@shoptomcat.com
+	ServerName shoptomcat.com
+	ServerAlias www.shoptomcat.com
+	ErrorLog ${APACHE_LOG_DIR}/shoptomcat.com-error.log
+	CustomLog ${APACHE_LOG_DIR}/shoptomcat.com-access.log combined	
+	
+	# PROXY AJP
+	# COMO QUIERO QUE EL USUARIO SOLO ESCRIBA http://shoptomcat.com PONEMOS /
+	# SI QUISIERAMOS QUE PONGA http://shoptomcat.com/tienda PONEMOS /tienda
+	# EN ALGUNOS TOMCAT HAY QUE AGREGAR UNA CONTRASEÑA MEDIANTE secret
+	# HAY QUE PONER ajp://localhost:8009/NOMBRE_APP
+	ProxyPass /shop ajp://localhost:8009/shop secret=miclave
+	ProxyPassReverse /shop ajp://localhost:8009/shop secret=miclave		
+</VirtualHost>
 
+EN /ETC/HOSTS
+127.0.0.1	localhost
+127.0.1.1	debian.myguest.virtualbox.org	debian
+127.0.0.1 	despliegue.com 
+127.0.0.2	prueba.com
+127.0.0.3	grupos.com shop.com 
+127.0.0.1	pcitems.com shoptomcat.com
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+
+HABILITAR MOD PROXY -> sudo a2enmo proxy_ajp
+
+HABILITAR CONF->sudo a2ensite shoptomcat.com.conf
+
+DESPUES -> sudo gedit /opt/tomcat/conf/server.xml  Y DE LA LINEA 100 A LA 104 DESCOMENTARLA Y TIENE QUE ESTAR ASI:
+    <Connector protocol="AJP/1.3"
+               address="::1"
+               port="8009"
+               redirectPort="8443" 
+               secretRequired="true"
+               secret="miclave" />
+
+REINICIAMOS APACHE2 Y TOMCAT -> sudo systemctl restart apache2 Y sudo systemctl restart tomcat
+
+INSTALAMOS DOCKER -> sudo apt install docker-compose
+
+INSTALAMOS UBUNTU APACHE2 CON DOCKER -> sudo docker pull ubuntu/apache2
+
+PARA VER LAS IMAGENES QUE TENEMOS DE DOCKER -> sudo docker images
+
+NOSOTROS VAMOS A USAR TOMCAT -> sudo docker pull tomcat
+
+EN CARPETA PERSONAL CREAR UNA CARPETA LLAMADA -> PaginaWeb
+
+DENTRO DE PaginaWeb CREAMOS OTRA CARPETA -> Archivo  Y NOS DIRIGIMOS A ELLA -> cd /PaginaWeb/Archivo
+
+CREAMOS UN ARCHIVO LLAMADO Dockerfile EN PaginaWeb Y DENTRO DE EL METEMOS ESTO (run son los comandos que queremos que se vayan a ejecutar) ->
+ 
+FROM ubuntu 
+RUN apt update
+RUN apt install -y apache2
+RUN apt install -y apache2-utils
+RUN apt clean 
+EXPOSE 80
+COPY Archivo /var/www/html
+CMD ["apache2ctl","-D","FOREGROUND"]
+
+EN LA CARPETA /PaginaWeb/Archivo CREAREMOS UN INDEX.HTML DE PRUEBA ->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello Word</title>
+</head>
+<body>
+    <p>HOLA MUNDO!!!</p>
+</body>
+</html>
+
+
+AHORA EN LA RUTA PaginaWeb EJECUTAMOS ESTE COMANDO -> sudo docker build -t miapache2 . (ponemos el . porque el Dockerfile esta en la ruta y hemos puesto miapache2 por ponerle un nombre)
+
+PARA LANZARLA -> sudo docker run -p 5000:80 -d  --name prueba miapache2
+
+Y EN WEB PARA PROBAR QUE ESTA LANZADO BIEN Y TODO ESTA CORRECTO  ->  http://localhost:5000 (TE DEBERIA SALIR LA INFO DEL INDEX.HTML)
+
+PARA ABRIR LA CONSOLA DEL DOCKER CREADO -> sudo docker exec -it prueba /bin/bash
+
+
+PARA PRACTICAR: ***CREAR CONTENEDOR TOMCAT***
+
+1º) sudo docker run -p 5001:8080 -d --name prueba2 tomcat
+
+2º) sudo docker exec -it prueba2 /bin/bash
+
+3º) apt update
+
+4º) apt install -y wget
+
+5º) wget https://tomcat.apache.org/tomcat-11.0-doc/appdev/sample/sample.war -O /usr/local/tomcat/webapps/sample.war
+
+6º) exit
+
+7º) sudo docker restart prueba2
+
+8º) en web localhost:5001/sample
+
+
+______________________________________
+** LA IMAGEN DE MYSQL EN DOCKER**
+>>> https://www.docker.com/_/mysql <<<
+______________________________________
+
+ Descargar docker de mysql -> sudo docker pull mysql
+
+ MIrar los docker -> sudo docker ps -a
+
+ Parar todos los docker -> sudo docker stop nombre_de_la_imagen
+
+*** Para crear un contenedor se puede crear un contenedor con una imagen descargada o creando una imagen y ponersela al contenedor****
+
+Usando la imagen de mysql instalada:
+
+1º Crear Contenedor Con Imagen mysql -> sudo docker run -d -p 3307:3306 --name prueba_mysql -e MYSQL_ROOT_PASSWORD=root -v ~/Downloads:/descargas mysql
+
+2º Verificar que se ha creado -> sudo docker ps -a
+
+3º Ejecutar Contenedor -> sudo docker exec -it prueba_mysql /bin/bash
+
+4º Dentro del Contenedor  para comprobar la carpeta compartida-> ls descargas/
+
+5º Despues -> mysql -p (y ponemos la contraseña que pusimos root);
+
+6º CREATE DATABASE prueba;
+
+7º USE prueba;
+
+8º CREATE TABLE tabla (id INT PRIMARY KEY AUTO_INCREMENT) ;
+
+9º INSERT INTO tabla VALUES (NULL), (NULL), (NULL), (NULL);
+
+10º Para salir de mysql -> exit
+
+11º Desde el host para conectarnos al contenedor -> sudo mysql -h localhost -P 3307 -u root -p prueba
+
+12º Ponemos Contraseña -> root
+
+*****Y ASI NOS SALDRA LA TABLA QUE HICIMOS EN EL CONTENEDOR******
+
+
+***NO FUNCIONA LO DE ABAJO LA SIGUIENTE CLASE LO HACEMOS FALTA PONER NODE-MODULES***
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Instalamos imagen de mongo -> sudo docker pull mongo
+Creamos el contenedor -> sudo docker create -p 27017:27017 --name monguito -e MONGO_INITDB_ROOT_USERNAME=master -e MONGO_INITDB_ROOT_PASSWORD=master mongo
+Arrancamos el contenedor -> sudo docker start monguito
+Descargamos y ponemos en descargas el fichero index.js de esta ruta -> https://github.com/nschurmann/mongoapp-curso-docker
+Dentro de Descargas creamos un fichero sin sudo-> nano Dockerfile
+Dentro del fichero Dockerfile ->                                               
+FROM node:18
+
+RUN mkdir -p /home/app
+
+COPY . /home/app
+
+EXPOSE 3000
+
+CMD ["node", "/home/app/index.js"]
+
+
+Listar diferentes redes que tenemos -> sudo docker network ls
+Creamos nuestra propia red -> sudo docker network create mired
+Modificamos el fichero index.js  y tiene que quedar asi->
+import express from 'express'
+import mongoose from 'mongoose'
+
+const Animal = mongoose.model('Animal', new mongoose.Schema({
+  tipo: String,
+  estado: String,
+}))
+
+const app = express()
+
+mongoose.connect('mongodb://master:master@monguito:27017/miapp?authSource=admin')
+
+app.get('/', async (_req, res) => {
+  console.log('listando... chanchitos...')
+  const animales = await Animal.find();
+  return res.send(animales)
+})
+app.get('/crear', async (_req, res) => {
+  console.log('creando...')
+  await Animal.create({ tipo: 'Chanchito', estado: 'Feliz' })
+  return res.send('ok')
+})
+
+app.listen(3000, () => console.log('listening...'))
+
+
+
+**Desde la carpeta Descargas(o donde tengas el index.js y el fichero Dockerfile)** -> sudo docker build -t miapp:1 .
+
+Parar y borrar el contenedor monguito -> sudo docker stop monguito y sudo docker rm monguito 
+
+Creamos otra vez el contenedor de mongo -> sudo docker create -p 27017:27017 --name monguito --network mired -e MONGO_INITDB_ROOT_USERNAME=master -e MONGO_INITDB_ROOT_PASSWORD=master mongo
+
+Creamos otro contenedor -> sudo docker create -p 3000:3000 --name chanchito --network mired miapp:1
+
+Arrancar los dos contenedores -> sudo docker start monguito y sudo docker start chanchito
+
+----------------VSFTPD ----------------------
+
+
+Instalar vsftpd -> sudo apt install vsftpd
+
+Abrimos fichero -> sudo gedit /etc/vsftpd.conf
+
+Descomentar linea 31
+
+Reiniciar servidor -> sudo service vsftpd restart
+	
+Instalar ifconfig -> sudo apt install net-tools
+
+Ver direccion ip -> sudo ifconfig
+
+Ver la ip de enp0s3 en este caso -> 10.0.2.15
+
+Instalat ftp -> sudo apt install ftp 
+
+Entrar a ftp -> sudo ftp 10.0.2.15
+
+nos pide nombre de usuario -> adripablo
+
+nos pide contraseña -> topo
+
+COMANDOS BASICOS DE FTP 
+-----------------------------------------------
+pwd -> mostrar ruta del servidor
+!cd -> para cambiar de directorio en el cliente
+cd -> para cmabiar de directorio en el servidor
+!pwd -> mostrar ruta del cliente 
+!ls ~ -> nos dice que hay en el directorio del cliente
+ls -> nos dice los directorios que hay en el servidor
+!mkdir carpeta_cliente -> crear carpeta en el cliente
+mkdir carpeta_servidor -> crear carpeta en el servidor
+!cd ó lcd carpeta_cliente -> movernos a la carpeta en el cliente 
+!echo "prueba" > archivo.txt -> Meter archivo en el cliente 
+put archivo.txt -> enviar al servidor desde el cliente archivo.txt 
+get archivo_s.txt -> descargar en cliente desde el servidor
+
+
+		PRÁCTICA EN CLASE
+		~~~~~~~~~~~~~~~~~~
+
+para entrar... sudo ftp 10.0.2.15
+
+PASO1 creamos una carpeta para cliente/servidor
+-------------------------------------------------------------------
+!mkdir carpeta_cliente => crea una carpeta "carpeta_cliente" en el cliente
+mkdir carpeta_servidor => crea una carpeta "carpeta_servidor" en el servidor
+
+
+PASO2 movemos cada máquina a su carpeta:
+--------------------------------------------------------------
+cd ~/carpeta_servidor
+lcd ~/carpeta_cliente
+
+
+PASO3 Probamos a crear un archivo en el cliente:
+-------------------------------------------------------------------
+!echo "prueba" > archivo.txt
+
+
+PASO4 mandamos archivo.txt de cliente a servidor:
+---------------------------------------------------------------------
+put archivo.txt 
+
+
+PASO5 me creo un ejemplo2 y hago de servidor a cliente
+----------------------------------------------------------------------------
+echo "holaa" > archivoAdri.txt
+get archivoAdri.txt  -> manda ESE archivo del servidor al cliente
+mget * -> manda TODOS los archvios del servidor al cliente
+
+ 
+PASO6 borramos todos los txt (cli y serv)
+y creamos un cliente.txt en cli y un servidor.txt en serv
+------------------------------------------------------------------------
+rm *
+...
+
+
+PASO 7:
+*****CONEXIÓN SEGURA PARA HACER COPIAS
+--------------------------------------------------------------------	
+sudo scp nombreArchivo.txt nameUsuMaquina@[dominio o ip]:[ruta]
+										  127.0.0.1     ~/carpeta_cliente
+
+						¿está activo el puerto?
+						ps -aux | grep sshd 
+
+						sudo apt install sshd
+						sudo apt install ssh
+
+
+	si no funciona lo de arriba... :
+sudo scp adri@localhost:~/carpeta_cliente/cliente.txt adri@localhost:~/carpeta_servidor
+
+
+sudo scp -r adri@localhost:~/carpeta_cliente adri@localhost:~/carpeta_servidor
+
+borrar contenido servidor:
+rm -r ~/carpeta_servidor/carpeta_cliente
+
+
+    límiete de velocidad
+		   |
+sudo scp -l 1 -r adri@localhost:~/carpeta_cliente adri@localhost:~/carpeta_servidor
+
+
+
+
+*** GIT ***
+========
+ ¿lo tengo? git --version
+
+git config --global user.name "masterAdri"   >>>   le ponemos un nombre
+git config --global user.email "prueba@email.com"   >>>   le ponemos un mail
+git config --global core.editor "code --wait"   >>>   elegimos el ide por defecto
+git config --global -e   >>>   vemos como ha quedado
+
+      [para configurar el salto de línea]
+SI ESTOY DESDE LINUX!!!
+git config --global core.autocrlf input
+
+SI ESTOY DESDE WINDOWS!!!
+git config --global core.autocrlf true
+
+
+creo un repositiorio:
+	mkdir proyecto_git
+	
+abro vsc con el repo
+	cd proyecto_git
+	code .
+
+creo un hola mundo básico
+
+iniciamos el repositorio
+	git init
+
+*cambiamos la rama de master a main
+	git branch -m master main
+
+estado del repo
+	git status  ==> en rojo no está añadido, en verde sí
+	git status -s ==> lo mismo pero con más detalle
+
+añadimos los cambios 
+	git add .
+
+*si no quería comitar esos cambios...
+	git rm -r --cached .   >>>   -r pq es una carpeta, sin él si son solo archivos 
+
+para comitar
+	git commit -m "mensaje(ES OBLIGATORIO)"
+
+*como recupero algo ya comiteado
+	git rm prueba.txt
+
+	vuelvo a hacer un commit y queda eliminado
 
 
 
